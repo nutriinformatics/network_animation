@@ -1,0 +1,6 @@
+frames/*
+*.mp4
+.Rhistory
+*.Rproj
+.Rproj.user/
+
