@@ -10,7 +10,7 @@ currency_mets <- c("cpd00001","cpd00067","cpd00002","cpd00003","cpd00004",
                    "cpd00010","cpd00013","cpd00012","cpd00023","cpd00013",
                    "cpd00007","cpd00014")
 
-modfiles <- dir("data2/", full.names = TRUE, pattern = "\\.RDS$")
+modfiles <- dir("data/", full.names = TRUE, pattern = "\\.RDS$")
 
 models <- lapply(modfiles, readRDS)
 
@@ -38,19 +38,19 @@ n <- dim(modj$modj@S)[2]
 for(i in 1:n) {
   cat("\r",i,"/",n)
   rxn <- modj$modj@react_id[i]
-  
+
   mts_LHS <- modj$modj@met_id[which(modj$modj@S[,i] < 0)]
   mts_RHS <- modj$modj@met_id[which(modj$modj@S[,i] > 0)]
-  
+
   if(length(c(mts_LHS, mts_RHS)) > 1 & length(c(mts_LHS, mts_RHS)) < 12) {
     combis <- expand.grid(mts_LHS,mts_RHS)
-    
+
     edges[[rxn]] <- data.table(from = combis$Var1,
                                to = combis$Var2,
                                rxn = rxn)
   }
 
-  
+
 }
 edges <- rbindlist(edges)
 edges <- edges[!grepl(paste(currency_mets, collapse = "|"), from)]
@@ -83,22 +83,22 @@ save_status <- function(sim) {
 }
 
 
-simulation <- netdata |> 
-  simulate() |> 
-  wield(link_force) |> 
-  wield(manybody_force) |> 
-  wield(center_force) |> 
-  wield(collision_force, radius = 0.5, n_iter = 2) |> 
+simulation <- netdata |>
+  simulate() |>
+  wield(link_force) |>
+  wield(manybody_force) |>
+  wield(center_force) |>
+  wield(collision_force, radius = 0.5, n_iter = 2) |>
   evolve(step = 255, on_generation = save_status)
 
 
-# graph <- netdata |> 
-#   simulate() |> 
-#   wield(link_force) |> 
-#   wield(manybody_force) |> 
-#   wield(center_force) |> 
-#   wield(collision_force, radius = 0.5, n_iter = 2) |> 
-#   evolve() |> 
+# graph <- netdata |>
+#   simulate() |>
+#   wield(link_force) |>
+#   wield(manybody_force) |>
+#   wield(center_force) |>
+#   wield(collision_force, radius = 0.5, n_iter = 2) |>
+#   evolve() |>
 #   as_tbl_graph()
 
 ncolors <- c(EX = "#FFFFFF",
@@ -110,14 +110,14 @@ ncolors <- c(EX = "#FFFFFF",
 
 
 for(i in 1:length(savings)) {
-  p <- ggraph(savings[[i]], 'nicely') + 
-    geom_edge_link(aes(colour = compE), alpha = 0.2) + 
+  p <- ggraph(savings[[i]], 'nicely') +
+    geom_edge_link(aes(colour = compE), alpha = 0.2) +
     geom_node_point(aes(fill = comp, color = comp), shape = 21, size = 1, alpha = 0.5,
-                    stroke = 0.5) + 
-    scale_fill_manual(values = ncolors) + 
+                    stroke = 0.5) +
+    scale_fill_manual(values = ncolors) +
     scale_color_manual(values = ncolors) +
     scale_edge_color_manual(values = ncolors) +
-    #scale_edge_width('Value', range = c(0.5, 3)) + 
+    #scale_edge_width('Value', range = c(0.5, 3)) +
     coord_cartesian(ylim = c(-3000, 3192), xlim = c(-8000,3008), expand = FALSE) +
     theme_graph() +
     theme(legend.position = "none",
@@ -126,11 +126,11 @@ for(i in 1:length(savings)) {
           plot.background = element_rect(fill = "#0e0e0e", linewidth = 0),
           plot.margin=grid::unit(c(0,0,0,0), "mm"),
           panel.spacing=grid::unit(c(0,0,0,0), "mm"))
-  
+
   i_long <- as.character(i)
   i_long <- paste0(paste(rep("0", floor(log10(length(savings)))-floor(log10(i))),
                          collapse = ""),i_long)
-  
+
   cat("\r",i_long)
   ggsave(paste0("frames/out_",i_long,".png"), plot = p, width =  16, height = 9,
          units = "in")
@@ -138,20 +138,20 @@ for(i in 1:length(savings)) {
     ggsave(paste0("frames/out_",paste0(rep("0",floor(log10(length(savings)))+1), collapse = ""),".png"), plot = p, width =  16, height = 9,
            units = "in")
   }
-    
+
 }
 
 
-# ffmpeg -r 25 -f image2 -s 1920x1080 -i out_%03d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p ../test.mp4
+# ffmpeg -r 25 -f image2 -s 1920x1080 -i frames/out_%03d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p test.mp4
 
-p <- ggraph(savings[[255]], 'nicely') + 
-  geom_edge_link(aes(colour = compE), alpha = 0.2) + 
+p <- ggraph(savings[[255]], 'nicely') +
+  geom_edge_link(aes(colour = compE), alpha = 0.2) +
   geom_node_point(aes(fill = comp, color = comp), shape = 21, size = 1, alpha = 0.5,
-                  stroke = 0.5) + 
-  scale_fill_manual(values = ncolors) + 
+                  stroke = 0.5) +
+  scale_fill_manual(values = ncolors) +
   scale_color_manual(values = ncolors) +
   scale_edge_color_manual('comp', values = ncolors) +
-  #scale_edge_width('Value', range = c(0.5, 3)) + 
+  #scale_edge_width('Value', range = c(0.5, 3)) +
   coord_fixed(ylim = c(-3000, 3000), xlim = c(-8000,3000)) +
   theme_graph() +
   theme(legend.position = "none",
