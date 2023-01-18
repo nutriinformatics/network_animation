@@ -10,7 +10,14 @@ currency_mets <- c("cpd00001","cpd00067","cpd00002","cpd00003","cpd00004",
                    "cpd00010","cpd00013","cpd00012","cpd00023","cpd00013",
                    "cpd00007","cpd00014")
 
-modfiles <- dir("data/", full.names = TRUE, pattern = "\\.RDS$")
+modfiles <- dir("data/", full.names = TRUE, pattern = "\\.RDS$") # gapseq version: 1.2 e2f3209
+
+ncolors <- c(EX = "#FFFFFF",
+             M1 = "#648FFF",   # HRGM_Genome_0108 (Faecalibacterium prausnitzii)
+             M2 = "#785EF0",   # HRGM_Genome_0287 (Faecalicatena gnavus, previously: Ruminococcus gnavus)
+             M3 = "#DC267F",   # HRGM_Genome_1088 (Bifidobacterium longum subsp. infantis)
+             M4 = "#FE6100",   # HRGM_Genome_1853 (Agathobacter rectale, previously: Eubacterium rectale)
+             M5 = "#FFB000")   # HRGM_Genome_2564 (Prevotella copri)
 
 models <- lapply(modfiles, readRDS)
 
@@ -20,8 +27,6 @@ models <- lapply(models, function(x) {
   x <- rmReact(x, react = der$der)
   return(x)
 })
-
-
 
 modj <- join_mult_models(models, merge.lb.method = "median")
 
@@ -88,8 +93,8 @@ simulation <- netdata |>
   wield(link_force) |>
   wield(manybody_force) |>
   wield(center_force) |>
-  wield(collision_force, radius = 0.5, n_iter = 2) |>
-  evolve(step = 255, on_generation = save_status)
+  wield(collision_force, radius = 3, n_iter = 10) |>
+  evolve(step = 299, on_generation = save_status)
 
 
 # graph <- netdata |>
@@ -101,12 +106,7 @@ simulation <- netdata |>
 #   evolve() |>
 #   as_tbl_graph()
 
-ncolors <- c(EX = "#FFFFFF",
-             M1 = "#648FFF",
-             M2 = "#785EF0",
-             M3 = "#DC267F",
-             M4 = "#FE6100",
-             M5 = "#FFB000")
+
 
 
 for(i in 1:length(savings)) {
@@ -142,9 +142,9 @@ for(i in 1:length(savings)) {
 }
 
 
-# ffmpeg -r 25 -f image2 -s 1920x1080 -i frames/out_%03d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p test.mp4
+# ffmpeg -r 25 -f image2 -s 1920x1080 -i frames/out_%03d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p netani.mp4
 
-p <- ggraph(savings[[255]], 'nicely') +
+p <- ggraph(savings[[299]], 'nicely') +
   geom_edge_link(aes(colour = compE), alpha = 0.2) +
   geom_node_point(aes(fill = comp, color = comp), shape = 21, size = 1, alpha = 0.5,
                   stroke = 0.5) +
